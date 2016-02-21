@@ -51,6 +51,16 @@ func Dial(network, addr string) (*Conn, error) {
 	return NewConn(c), nil
 }
 
+// Dial connects to the given address on the given network using net.Dial
+// and then returns a new Conn for the connection.
+func DialTimeout(network, addr string, timeout time.Duration) (*Conn, error) {
+	c, err := net.DialTimeout(network, addr, timeout)
+	if err != nil {
+		return nil, err
+	}
+	return NewConn(c), nil
+}
+
 // Close closes the underlying network connection.
 func (c *Conn) Close() error {
 	return c.c.Close()
