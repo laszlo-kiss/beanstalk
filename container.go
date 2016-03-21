@@ -1,16 +1,16 @@
 // The Beanstalk Container makes it easier to deal with an item
 // received from a tube. It packages the connection and the item
 // identifier along with the body of the item. Then the user can
-// decide what to do with the item w/o having to figure out which
-// connection originated the item, so that it can be properly
-// disposed.
+// decide what to do with the item w/o having to manually track
+// which connection originated the item, which is necessary to
+// properly disposition it.
 package beanstalk
 
 import (
 	"time"
 )
 
-// Any object that ends up in a container must implement this to
+// Any object that ends up in a container should implement this to
 // get out of it. Alternatively, see Container.Body().
 type Item interface {
    FromByteArray( []byte ) error
@@ -35,4 +35,7 @@ type Container interface {
 
    // Tells beanstalk that the Item is being abandoned.
    Release( priority uint32, delay time.Duration ) error
+
+   // Tells beanstalk that the Item is still being worked.
+   Touch() error
 }
