@@ -54,3 +54,51 @@ func (t *TubeSet) ReserveNoTimeout() (id uint64, body []byte, err error) {
 	}
 	return id, body, nil
 }
+
+// The beanstalk.Container implementation.
+type box struct {
+   conn *Conn
+   id uint64
+   body []byte
+}
+
+func (b *box) ID() uint64 { return b.id }
+
+func (b *box) Body() []byte { return b.body }
+
+func (b *box) Access( i Item ) error { return i.FromByteArray( b.body ) }
+
+func (b *box) Delete() error { return b.conn.Delete( b.id ) }
+
+func (b *box) Release( priority uint32, delay time.Duration ) error {
+   return b.conn.Release( b.id, priority, delay )
+}
+
+func (b *box) Touch() error { return b.conn.Touch( b.id ) }
+
+func (t *TubeSet) ReserveItem( timeout time.Duration ) (container Container, err error) {
+   an_id,the_body,err := t.Reserve( timeout )
+   if err != nil {
+      return nil,err
+   }
+   b := &box{
+      conn : t.Conn,
+      id : an_id,
+      body : the_body,
+   }
+   return b,nil
+}
+
+func (t *TubeSet) ReserveItemNoTimeout() (container Container, err error) {
+   an_id,the_body,err := t.ReserveNoTimeout()
+   if err != nil {
+      return nil,err
+   }
+   b := &box{
+      conn : t.Conn,
+      id : an_id,
+      body : the_body,
+   }
+   return b,nil
+}
+
